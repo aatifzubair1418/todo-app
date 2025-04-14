@@ -31,6 +31,18 @@
   </div>
 
   <script>
+    // Retrieve tasks from localStorage
+    function getStoredTasks() {
+      const tasks = JSON.parse(localStorage.getItem('tasks'));
+      return tasks ? tasks : [];
+    }
+
+    // Save tasks to localStorage
+    function saveTasks(tasks) {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    // Format the target date nicely
     function formatDateTime(dateTimeStr) {
       const options = { 
         weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', 
@@ -38,6 +50,8 @@
       };
       return new Date(dateTimeStr).toLocaleString(undefined, options);
     }
+
+    // Add task to the list and save it
     function addTask() {
       const taskInput = document.getElementById("taskInput");
       const taskTime = document.getElementById("taskTime");
@@ -46,50 +60,73 @@
 
       if (taskText === "") return;
 
-      const li = document.createElement("li");
-      li.className = "flex flex-col bg-purple-50 p-4 rounded-xl shadow-md hover:shadow-lg transition";
+      const taskList = getStoredTasks(); // Get current tasks from localStorage
 
-      const topRow = document.createElement("div");
-      topRow.className = "flex items-center justify-between";
+      // Add new task
+      const task = {
+        text: taskText,
+        deadline: taskDeadline
+      };
 
-      const span = document.createElement("span");
-      span.textContent = taskText;
-      span.className = "flex-1 cursor-pointer text-lg text-purple-800 font-medium";
-      span.onclick = () => span.classList.toggle("line-through");
+      taskList.push(task);
+      saveTasks(taskList); // Save updated tasks list
 
-      const timeSpan = document.createElement("small");
-      timeSpan.textContent = taskDeadline ? `🎯 Target Date: ${formatDateTime(taskDeadline)}` : "";
-      timeSpan.className = "text-sm text-purple-500 mt-2";
-
-      const btnGroup = document.createElement("div");
-      btnGroup.className = "flex space-x-2 ml-4";
-
-      const editBtn = document.createElement("button");
-      editBtn.textContent = "✏️";
-      editBtn.className = "text-yellow-500 hover:text-yellow-700 text-xl";
-      editBtn.onclick = () => editTask(span, timeSpan);
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "❌";
-      deleteBtn.className = "text-red-500 hover:text-red-700 text-xl";
-      deleteBtn.onclick = () => li.remove();
-
-      btnGroup.appendChild(editBtn);
-      btnGroup.appendChild(deleteBtn);
-
-      topRow.appendChild(span);
-      topRow.appendChild(btnGroup);
-
-      li.appendChild(topRow);
-      if (taskDeadline) li.appendChild(timeSpan);
-
-      document.getElementById("taskList").appendChild(li);
+      renderTasks(); // Rerender tasks list
 
       taskInput.value = "";
       taskTime.value = "";
     }
 
-    function editTask(textElement, timeElement) {
+    // Render tasks to the page
+    function renderTasks() {
+      const taskList = getStoredTasks();
+      const taskListElement = document.getElementById("taskList");
+      taskListElement.innerHTML = "";
+
+      taskList.forEach((task, index) => {
+        const li = document.createElement("li");
+        li.className = "flex flex-col bg-purple-50 p-4 rounded-xl shadow-md hover:shadow-lg transition";
+
+        const topRow = document.createElement("div");
+        topRow.className = "flex items-center justify-between";
+
+        const span = document.createElement("span");
+        span.textContent = task.text;
+        span.className = "flex-1 cursor-pointer text-lg text-purple-800 font-medium";
+        span.onclick = () => span.classList.toggle("line-through");
+
+        const timeSpan = document.createElement("small");
+        timeSpan.textContent = task.deadline ? `🎯 Target Date: ${formatDateTime(task.deadline)}` : "";
+        timeSpan.className = "text-sm text-purple-500 mt-2";
+
+        const btnGroup = document.createElement("div");
+        btnGroup.className = "flex space-x-2 ml-4";
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "✏️";
+        editBtn.className = "text-yellow-500 hover:text-yellow-700 text-xl";
+        editBtn.onclick = () => editTask(span, timeSpan, index);
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "❌";
+        deleteBtn.className = "text-red-500 hover:text-red-700 text-xl";
+        deleteBtn.onclick = () => deleteTask(index);
+
+        btnGroup.appendChild(editBtn);
+        btnGroup.appendChild(deleteBtn);
+
+        topRow.appendChild(span);
+        topRow.appendChild(btnGroup);
+
+        li.appendChild(topRow);
+        if (task.deadline) li.appendChild(timeSpan);
+
+        taskListElement.appendChild(li);
+      });
+    }
+
+    // Edit task
+    function editTask(textElement, timeElement, index) {
       const currentText = textElement.textContent;
       const currentTime = timeElement ? timeElement.textContent.replace("🎯 Target Date: ", "") : "";
 
@@ -109,7 +146,23 @@
           }
         }
       }
+
+      const taskList = getStoredTasks();
+      taskList[index].text = newText;
+      taskList[index].deadline = newTime ? new Date(newTime).toISOString() : "";
+      saveTasks(taskList);
     }
+
+    // Delete task
+    function deleteTask(index) {
+      const taskList = getStoredTasks();
+      taskList.splice(index, 1); // Remove task from array
+      saveTasks(taskList); // Save updated list to localStorage
+      renderTasks(); // Rerender tasks list
+    }
+
+    // Initial render
+    renderTasks();
   </script>
 </body>
 </html>
