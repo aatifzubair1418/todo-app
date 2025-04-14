@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Stylish To-Do App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(to right, #667eea, #764ba2);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4">
+  <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
+    <h1 class="text-3xl font-bold mb-6 text-center text-purple-700">📝 My To-Do List</h1>
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4">
+      <input id="taskInput" type="text" placeholder="Enter a task..." class="sm:col-span-2 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+      <input id="taskTime" type="datetime-local" class="sm:col-span-1 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+      <button onclick="addTask()" class="bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 transition sm:col-span-1">Add</button>
+    </div>
+    <ul id="taskList" class="space-y-4 mt-4"></ul>
+  </div>
+
+  <script>
+    function addTask() {
+      const taskInput = document.getElementById("taskInput");
+      const taskTime = document.getElementById("taskTime");
+      const taskText = taskInput.value.trim();
+      const taskDeadline = taskTime.value;
+
+      if (taskText === "") return;
+
+      const li = document.createElement("li");
+      li.className = "flex flex-col bg-purple-50 p-4 rounded-xl shadow-md hover:shadow-lg transition";
+
+      const topRow = document.createElement("div");
+      topRow.className = "flex items-center justify-between";
+
+      const span = document.createElement("span");
+      span.textContent = taskText;
+      span.className = "flex-1 cursor-pointer text-lg text-purple-800 font-medium";
+      span.onclick = () => span.classList.toggle("line-through");
+
+      const timeSpan = document.createElement("small");
+      timeSpan.textContent = taskDeadline ? `Due: ${new Date(taskDeadline).toLocaleString()}` : "";
+      timeSpan.className = "text-sm text-purple-500 mt-2";
+
+      const btnGroup = document.createElement("div");
+      btnGroup.className = "flex space-x-2 ml-4";
+
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "✏️";
+      editBtn.className = "text-yellow-500 hover:text-yellow-700 text-xl";
+      editBtn.onclick = () => editTask(span, timeSpan);
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "❌";
+      deleteBtn.className = "text-red-500 hover:text-red-700 text-xl";
+      deleteBtn.onclick = () => li.remove();
+
+      btnGroup.appendChild(editBtn);
+      btnGroup.appendChild(deleteBtn);
+
+      topRow.appendChild(span);
+      topRow.appendChild(btnGroup);
+
+      li.appendChild(topRow);
+      if (taskDeadline) li.appendChild(timeSpan);
+
+      document.getElementById("taskList").appendChild(li);
+
+      taskInput.value = "";
+      taskTime.value = "";
+    }
+
+    function editTask(textElement, timeElement) {
+      const currentText = textElement.textContent;
+      const currentTime = timeElement ? timeElement.textContent.replace("Due: ", "") : "";
+
+      const newText = prompt("Edit your task:", currentText);
+      if (newText !== null && newText.trim() !== "") {
+        textElement.textContent = newText;
+      }
+
+      const newTime = prompt("Edit deadline (leave blank to remove):", currentTime);
+      if (timeElement && newTime !== null) {
+        if (newTime.trim() === "") {
+          timeElement.textContent = "";
+        } else {
+          const parsedTime = new Date(newTime);
+          if (!isNaN(parsedTime)) {
+            timeElement.textContent = `Due: ${parsedTime.toLocaleString()}`;
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
