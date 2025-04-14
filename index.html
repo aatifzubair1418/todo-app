@@ -9,20 +9,36 @@
     body {
       background: linear-gradient(to right, #667eea, #764ba2);
     }
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.6);
+    }
   </style>
 </head>
 <body class="min-h-screen flex items-center justify-center px-4">
   <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
-    <h1 class="text-3xl font-bold mb-6 text-center text-purple-700">📝 My To-Do List</h1>
+    <h1 class="text-3xl font-bold mb-2 text-center text-purple-700">📝 My To-Do List</h1>
+    <p class="text-center text-gray-500 mb-6 italic">Dedicated to my brother Ariz and Aquif— for believing in me and giving me the challenge that started it all 💡</p>
+
     <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4">
       <input id="taskInput" type="text" placeholder="Enter a task..." class="sm:col-span-2 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400" />
-      <input id="taskTime" type="datetime-local" class="sm:col-span-1 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+      <label class="sm:col-span-1 flex flex-col">
+        <span class="text-sm text-gray-600 mb-1 ml-1">🎯 Target Date</span>
+        <input id="taskTime" type="datetime-local" class="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+      </label>
       <button onclick="addTask()" class="bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 transition sm:col-span-1">Add</button>
     </div>
     <ul id="taskList" class="space-y-4 mt-4"></ul>
   </div>
 
   <script>
+    function formatDateTime(dateTimeStr) {
+      const options = { 
+        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', 
+        hour: '2-digit', minute: '2-digit'
+      };
+      return new Date(dateTimeStr).toLocaleString(undefined, options);
+    }
+
     function addTask() {
       const taskInput = document.getElementById("taskInput");
       const taskTime = document.getElementById("taskTime");
@@ -43,7 +59,7 @@
       span.onclick = () => span.classList.toggle("line-through");
 
       const timeSpan = document.createElement("small");
-      timeSpan.textContent = taskDeadline ? `Due: ${new Date(taskDeadline).toLocaleString()}` : "";
+      timeSpan.textContent = taskDeadline ? `🎯 Target Date: ${formatDateTime(taskDeadline)}` : "";
       timeSpan.className = "text-sm text-purple-500 mt-2";
 
       const btnGroup = document.createElement("div");
@@ -76,7 +92,7 @@
 
     function editTask(textElement, timeElement) {
       const currentText = textElement.textContent;
-      const currentTime = timeElement ? timeElement.textContent.replace("Due: ", "") : "";
+      const currentTime = timeElement ? timeElement.textContent.replace("🎯 Target Date: ", "") : "";
 
       const newText = prompt("Edit your task:", currentText);
       if (newText !== null && newText.trim() !== "") {
@@ -90,7 +106,7 @@
         } else {
           const parsedTime = new Date(newTime);
           if (!isNaN(parsedTime)) {
-            timeElement.textContent = `Due: ${parsedTime.toLocaleString()}`;
+            timeElement.textContent = `🎯 Target Date: ${formatDateTime(parsedTime)}`;
           }
         }
       }
